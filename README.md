@@ -1,95 +1,47 @@
 # Rebase
-[![CI](https://github.com/peter-evans/rebase/workflows/CI/badge.svg)](https://github.com/peter-evans/rebase/actions?query=workflow%3ACI)
-[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Rebase%20Pulls-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOCAYAAAAfSC3RAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAM6wAADOsB5dZE0gAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAERSURBVCiRhZG/SsMxFEZPfsVJ61jbxaF0cRQRcRJ9hlYn30IHN/+9iquDCOIsblIrOjqKgy5aKoJQj4O3EEtbPwhJbr6Te28CmdSKeqzeqr0YbfVIrTBKakvtOl5dtTkK+v4HfA9PEyBFCY9AGVgCBLaBp1jPAyfAJ/AAdIEG0dNAiyP7+K1qIfMdonZic6+WJoBJvQlvuwDqcXadUuqPA1NKAlexbRTAIMvMOCjTbMwl1LtI/6KWJ5Q6rT6Ht1MA58AX8Apcqqt5r2qhrgAXQC3CZ6i1+KMd9TRu3MvA3aH/fFPnBodb6oe6HM8+lYHrGdRXW8M9bMZtPXUji69lmf5Cmamq7quNLFZXD9Rq7v0Bpc1o/tp0fisAAAAASUVORK5CYII=)](https://github.com/marketplace/actions/rebase-pulls)
+[![CI](https://github.com/linhbn123/rebase-pull-requests/workflows/CI/badge.svg)](https://github.com/linhbn123/rebase-pull-requests/actions?query=workflow%3ACI)
+[![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Rebase%20Pull%20Requests-blue)](https://github.com/marketplace/actions/rebase-pull-requests)
 
-A GitHub action to rebase pull requests in a repository.
+A GitHub action based on [Peter Evans' Rebase Pulls](https://github.com/peter-evans/rebase) to rebase pull requests in a repository.
 
 ## Usage
 
-The default behaviour of the action with no configured inputs is to check the current repository for rebaseable pull requests and rebase them.
-Pull requests from forks are rebaseable only if they [allow edits from maintainers](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork).
+You need to create an .yml file, say, `rebase-pull-requests.yml`, in directory `.github/workflows` to configure the action. A typical configuration should look like following:
 
 ```yml
-      - uses: peter-evans/rebase@v1
-```
-
-### Periodically rebase all pull requests
-
-The simplest way to use this action is to schedule it to run periodically.
-
-```yml
-name: Rebase
-on:
-  schedule:
-    - cron:  '0 0 * * *'
-jobs:
-  rebase:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: peter-evans/rebase@v1
-```
-
-### Rebase all pull requests on push to the base branch
-
-```yml
-name: Rebase
+name: Rebase Pull Requests
 on:
   push:
-    branches: [master]
+    branches: '**'
 jobs:
   rebase:
     runs-on: ubuntu-latest
     steps:
-      - uses: peter-evans/rebase@v1
-        with:
-          base: master
+      - uses: linhbn123/rebase-pull-requests@v1.0.0
 ```
 
-### Rebase slash command
+This configuration will trigger the action on every push to any branch. Let's say you have a pull request with source branch `feature/my-feature` and target branch `main`. If there is a new commit on `main` (e.g. another pull request is merged), then `feature/my-feature` will be rebased on it.
 
-Use the following two workflows and a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) to add a `/rebase` slash command to pull request comments.
-The [slash-command-dispatch](https://github.com/peter-evans/slash-command-dispatch) action makes sure that the command is only executable by users with `write` access to the repository.
-
-```yml
-name: Slash Command Dispatch
-on:
-  issue_comment:
-    types: [created]
-jobs:
-  slashCommandDispatch:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Slash Command Dispatch
-        uses: peter-evans/slash-command-dispatch@v1
-        with:
-          token: ${{ secrets.PAT }}
-          commands: rebase
-          permission: write
-          issue-type: pull-request
-```
+If you wish to trigger the action only for a specific branch, say, `main`, then you can use the following configuration:
 
 ```yml
-name: rebase-command
+name: Rebase Pull Requests
 on:
-  repository_dispatch:
-    types: [rebase-command]
+  push:
+    branches: [main]
 jobs:
   rebase:
     runs-on: ubuntu-latest
     steps:
-      - uses: peter-evans/rebase@v1
-        id: rebase
-        with:
-          head: ${{ github.event.client_payload.pull_request.head.label }}
-      - name: Add reaction
-        if: steps.rebase.outputs.rebased-count == 1
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ github.event.client_payload.github.payload.repository.full_name }}
-          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
-          reaction-type: hooray
+      - uses: linhbn123/rebase-pull-requests@v1.0.0
 ```
+
+**Notes:**
+- The operation is not cascaded. If you have a chain of pull requests, say, A <- B <- C, then a commit to A will trigger a rebase for B on A and will lead to new commits to B. These commits, however, won't trigger any rebase for C on B.
+- To see the statuses of action runs, open Actions view in your repository. Note that a successful run doesn't mean the rebase operation itself is successful. Check the log and the pull requests to confirm.
+- The statuses of rebase operations are also displayed as badges next to commits.
+- If the rebase operation is unsuccessful, your pull request will display files in conflict at the bottom of the page. You need to handle conflicts yourself.
+- If your branch is rebased automatically and you have local commits, your attempt to push to the remote branch will be rejected. In that case, you can rebase your local commits on latest changes by executing `git pull --rebase`.
 
 ### Action inputs
 
@@ -98,32 +50,7 @@ jobs:
 | `token` | `GITHUB_TOKEN` or a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token). | `GITHUB_TOKEN` |
 | `repository` | The target GitHub repository containing the pull request. | `github.repository` (Current repository) |
 | `head` | Filter pull requests by head user or head organization and branch name in the format `user:ref-name` or `organization:ref-name`. For example: `github:new-script-format` or `octocat:test-branch`. | |
-| `base` | Filter pull requests by base branch name. Example: `gh-pages`. | |
-
-### Target other repositories
-
-You can rebase requests in another repository by using a `repo` scoped [PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) instead of `GITHUB_TOKEN`.
-The user associated with the PAT must have write access to the repository.
-
-This example targets multiple repositories.
-
-```yml
-name: Rebase
-on:
-  schedule:
-    - cron:  '0 0 * * *'
-jobs:
-  rebase:
-    strategy:
-      matrix:
-        repo: ['my-org/repo1', 'my-org/repo2', 'my-org/repo3']
-    runs-on: ubuntu-latest
-    steps:
-      - uses: peter-evans/rebase@v1
-        with:
-          token: ${{ secrets.PAT }}
-          repository: ${{ matrix.repo }}
-```
+| `base` | Filter pull requests by base branch name. Example: `gh-pages`. | `github.ref` (Trigger branch) |
 
 ## License
 

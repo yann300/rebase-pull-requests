@@ -15,9 +15,11 @@ async function run(): Promise<void> {
       token: core.getInput('token'),
       repository: core.getInput('repository'),
       head: core.getInput('head'),
-      base: core.getInput('base')
+      base: core.getInput('base').startsWith('refs/heads/')
+        ? core.getInput('base').substr('refs/heads/'.length)
+        : core.getInput('base')
     }
-    core.debug(`Inputs: ${inspect(inputs)}`)
+    core.info(`Inputs: ${inspect(inputs)}`)
 
     const [headOwner, head] = inputValidator.parseHead(inputs.head)
 
@@ -35,7 +37,7 @@ async function run(): Promise<void> {
       // Checkout
       const path = uuidv4()
       process.env['INPUT_PATH'] = path
-      process.env['INPUT_REF'] = 'master'
+      process.env['INPUT_REF'] = inputs.base
       process.env['INPUT_FETCH-DEPTH'] = '0'
       process.env['INPUT_PERSIST-CREDENTIALS'] = 'true'
       const sourceSettings = inputHelper.getInputs()

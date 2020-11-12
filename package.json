@@ -15,19 +15,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/peter-evans/rebase.git"
+    "url": "git+https://github.com/linhbn123/rebase-pull-requests.git"
   },
   "keywords": [
     "actions",
     "pull",
     "rebase"
   ],
-  "author": "Peter Evans",
+  "author": "Linh Bui",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/peter-evans/rebase/issues"
+    "url": "https://github.com/linhbn123/rebase-pull-requests/issues"
   },
-  "homepage": "https://github.com/peter-evans/rebase",
+  "homepage": "https://github.com/linhbn123/rebase-pull-requests",
   "dependencies": {
     "@actions/core": "1.2.6",
     "@actions/io": "1.0.2",
