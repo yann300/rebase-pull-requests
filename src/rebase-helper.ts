@@ -3,6 +3,9 @@ import {GitCommandManager} from './git-command-manager'
 import {Pull} from './pulls-helper'
 import {v4 as uuidv4} from 'uuid'
 
+/* eslint @typescript-eslint/no-var-requires: "off" */
+const github = require('@actions/github')
+
 export class RebaseHelper {
   private git: GitCommandManager
 
@@ -65,7 +68,19 @@ export class RebaseHelper {
       )
     } else if (result == RebaseResult.Failed) {
       core.info(
-        `Rebase of head ref '${pull.headRef}' failed. Conflicts must be resolved manually.`
+        `Rebase of head ref '${pull.headRef}' on base ref '${pull.baseRef}' failed. Conflicts must be resolved manually.`
+      )
+
+      const octokit = github.getOctokit(core.getInput('token'))
+      const repo = core.getInput('repository').split('/')
+      const {data: comment} = await octokit.issues.createComment({
+        owner: repo[0],
+        repo: repo[1],
+        issue_number: pull.number,
+        body: `Rebase of head ref \`${pull.headRef}\` on base ref \`${pull.baseRef}\` failed. Conflicts must be resolved manually.`
+      })
+      core.info(
+        `Created comment id '${comment.id}' on pull request '${pull.number}'.`
       )
     }
 

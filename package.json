@@ -31,6 +31,7 @@
   "dependencies": {
     "@actions/core": "1.2.6",
     "@actions/io": "1.0.2",
+    "@actions/github": "4.0.0",
     "@octokit/graphql": "4.5.6",
     "checkout": "github:actions/checkout#v2.2.0",
     "uuid": "8.3.0"
