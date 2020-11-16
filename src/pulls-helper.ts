@@ -35,6 +35,7 @@ export class PullsHelper {
             node {
               baseRefName
               headRefName
+              number
               headRepository {
                 nameWithOwner
                 url
@@ -65,7 +66,8 @@ export class PullsHelper {
             p.node.baseRefName,
             p.node.headRepository.url,
             p.node.headRepository.nameWithOwner,
-            p.node.headRefName
+            p.node.headRefName,
+            p.node.number
           )
         }
       })
@@ -80,6 +82,7 @@ type Edge = {
   node: {
     baseRefName: string
     headRefName: string
+    number: number
     headRepository: {
       nameWithOwner: string
       url: string
@@ -104,16 +107,19 @@ export class Pull {
   headRepoUrl: string
   headRepoName: string
   headRef: string
+  number: number
   constructor(
     baseRef: string,
     headRepoUrl: string,
     headRepoName: string,
-    headRef: string
+    headRef: string,
+    number: number
   ) {
     this.baseRef = baseRef
     this.headRepoUrl = headRepoUrl
     this.headRepoName = headRepoName
     this.headRef = headRef
+    this.number = number
   }
 }
 
