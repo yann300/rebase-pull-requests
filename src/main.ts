@@ -20,6 +20,7 @@ async function run(): Promise<void> {
         : core.getInput('base')
     }
     core.info(`Inputs: ${inspect(inputs)}`)
+    console.log(`Inputs: ${inspect(inputs)}`)
 
     const [headOwner, head] = inputValidator.parseHead(inputs.head)
 
@@ -30,7 +31,10 @@ async function run(): Promise<void> {
       headOwner,
       inputs.base
     )
-
+    core.info('info')
+    core.info(head)
+    core.info(headOwner)
+    core.info(inspect(inputs))
     if (pulls.length > 0) {
       core.info(`${pulls.length} pull request(s) found.`)
 
@@ -50,8 +54,32 @@ async function run(): Promise<void> {
       const rebaseHelper = new RebaseHelper(git)
       let rebasedCount = 0
       for (const pull of pulls) {
-        const result = await rebaseHelper.rebase(pull)
-        if (result) rebasedCount++
+        try {
+          core.info(`Pulls: ${inspect(pull)}`)
+          if (pull.headRepoName !== 'ethereum/remix-project') {
+            core.info('skipping PR')
+            continue
+          }
+          let found = false
+          for (const label of pull.labels.edges) {     
+            core.info(`Pulls: ${inspect(pull)}`)
+            core.info(`Labels: ${inspect(pull.labels.edges)}`)
+            if (label.node.name === 'autorebase') {
+              found = true
+              break
+            }
+          }         
+         
+          if (!found) {
+            core.info('skipping PR, autorebase label not set')
+            continue
+          }
+
+          const result = await rebaseHelper.rebase(pull)
+          if (result) rebasedCount++          
+        } catch (e) {
+          core.info('rebasing failed ' + e.message)
+        }        
       }
 
       // Output count of successful rebases
@@ -59,7 +87,11 @@ async function run(): Promise<void> {
 
       // Delete the repository
       core.debug(`Removing repo at '${sourceSettings.repositoryPath}'`)
-      await io.rmRF(sourceSettings.repositoryPath)
+      try {
+        await io.rmRF(sourceSettings.repositoryPath)
+      } catch (e) {
+        core.info('cleanup failed ' + e.message)
+      }
     } else {
       core.info('No pull requests found.')
     }

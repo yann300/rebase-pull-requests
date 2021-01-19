@@ -2,6 +2,7 @@ import * as exec from '@actions/exec'
 import * as io from '@actions/io'
 import * as utils from './utils'
 import * as path from 'path'
+import * as core from '@actions/core'
 
 const tagsRefSpec = '+refs/tags/*:refs/tags/*'
 
@@ -272,17 +273,25 @@ export class GitCommandManager {
       ignoreReturnCode: allowAllExitCodes,
       listeners: {
         stdout: (data: Buffer) => {
+          core.info(data.toString())
           stdout.push(data.toString())
         },
         stderr: (data: Buffer) => {
+          core.info(data.toString())
           stderr.push(data.toString())
         }
       }
     }
-
-    result.exitCode = await exec.exec(`"${this.gitPath}"`, args, options)
-    result.stdout = stdout.join('')
-    result.stderr = stderr.join('')
+    core.info(`exec ${this.gitPath} , ${args} , ${options}`)
+    try {
+      result.exitCode = await exec.exec(`"${this.gitPath}"`, args, options)
+      result.stdout = stdout.join('')
+      result.stderr = stderr.join('')
+      core.info(`result exec ${result.exitCode} ${result.stdout} ${result.stderr}`)
+    } catch (e) {
+      core.info(e.message)
+    }
+    
     return result
   }
 }

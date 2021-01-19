@@ -33,6 +33,13 @@ export class PullsHelper {
         pullRequests(first: 100, states: OPEN, headRefName: $head, baseRefName: $base) {
           edges {
             node {
+              labels(first: 100) {
+                edges {
+                  node {
+                    name
+                  }
+                }
+              }
               baseRefName
               headRefName
               number
@@ -67,7 +74,8 @@ export class PullsHelper {
             p.node.headRepository.url,
             p.node.headRepository.nameWithOwner,
             p.node.headRefName,
-            p.node.number
+            p.node.number,
+            p.node.labels
           )
         }
       })
@@ -78,7 +86,7 @@ export class PullsHelper {
   }
 }
 
-type Edge = {
+type EdgePull = {
   node: {
     baseRefName: string
     headRefName: string
@@ -91,18 +99,30 @@ type Edge = {
       login: string
     }
     maintainerCanModify: boolean
+    labels: Labels
+  }
+}
+
+type EdgeLabel = {
+  node: {
+    name: string
   }
 }
 
 type Pulls = {
   repository: {
     pullRequests: {
-      edges: Edge[]
+      edges: EdgePull[]
     }
   }
 }
 
+type Labels = {
+  edges: EdgeLabel[]
+}
+
 export class Pull {
+  labels: Labels
   baseRef: string
   headRepoUrl: string
   headRepoName: string
@@ -113,13 +133,15 @@ export class Pull {
     headRepoUrl: string,
     headRepoName: string,
     headRef: string,
-    number: number
+    number: number,
+    labels: Labels
   ) {
     this.baseRef = baseRef
     this.headRepoUrl = headRepoUrl
     this.headRepoName = headRepoName
     this.headRef = headRef
     this.number = number
+    this.labels = labels
   }
 }
 
