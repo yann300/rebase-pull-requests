@@ -399,16 +399,26 @@ function run() {
                 const git = yield git_command_manager_1.GitCommandManager.create(sourceSettings.repositoryPath);
                 const rebaseHelper = new rebase_helper_1.RebaseHelper(git);
                 let rebasedCount = 0;
-                for (const pull of pulls) {
+                for (const pull of pulls) {                    
+                    try{
+                    core.info(`Pulls: ${inspect(pull)}`)
                     const result = yield rebaseHelper.rebase(pull);
                     if (result)
                         rebasedCount++;
+                    } catch (e) {
+                        core.info('rebasing failed ' + e.message)
+                    }
+
+                    try {
+                        yield io.rmRF(sourceSettings.repositoryPath);
+                    } catch(e) {
+                        core.info('cleanup failed ' + e.message)
+                    }
                 }
                 // Output count of successful rebases
                 core.setOutput('rebased-count', rebasedCount);
                 // Delete the repository
-                core.debug(`Removing repo at '${sourceSettings.repositoryPath}'`);
-                yield io.rmRF(sourceSettings.repositoryPath);
+                core.debug(`Removing repo at '${sourceSettings.repositoryPath}'`);                
             }
             else {
                 core.info('No pull requests found.');
