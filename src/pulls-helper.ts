@@ -33,6 +33,13 @@ export class PullsHelper {
         pullRequests(first: 100, states: OPEN, headRefName: $head, baseRefName: $base) {
           edges {
             node {
+              labels {
+                edges {
+                  node {
+                    name
+                  }
+                }
+              }
               baseRefName
               headRefName
               number
