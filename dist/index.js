@@ -400,9 +400,12 @@ function run() {
                 const rebaseHelper = new rebase_helper_1.RebaseHelper(git);
                 let rebasedCount = 0;
                 for (const pull of pulls) {
-                    const result = yield rebaseHelper.rebase(pull);
-                    if (result)
-                        rebasedCount++;
+                    try {
+                     const result = await rebaseHelper.rebase(pull)
+                     if (result) rebasedCount++
+                    } catch (e) {
+                     core.info('rebasing failed ' + e.message)
+                    }
                 }
                 // Output count of successful rebases
                 core.setOutput('rebased-count', rebasedCount);
