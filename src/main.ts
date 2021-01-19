@@ -50,8 +50,18 @@ async function run(): Promise<void> {
       const rebaseHelper = new RebaseHelper(git)
       let rebasedCount = 0
       for (const pull of pulls) {
-        const result = await rebaseHelper.rebase(pull)
-        if (result) rebasedCount++
+        try {
+          const result = await rebaseHelper.rebase(pull)
+          if (result) rebasedCount++          
+        } catch (e) {
+          core.info('rebasing failed ' + e.message)
+        }
+
+        try {
+          await io.rmRF(sourceSettings.repositoryPath)
+        } catch (e) {
+          core.info('cleanup failed ' + e.message)
+        }
       }
 
       // Output count of successful rebases
@@ -59,7 +69,6 @@ async function run(): Promise<void> {
 
       // Delete the repository
       core.debug(`Removing repo at '${sourceSettings.repositoryPath}'`)
-      await io.rmRF(sourceSettings.repositoryPath)
     } else {
       core.info('No pull requests found.')
     }
