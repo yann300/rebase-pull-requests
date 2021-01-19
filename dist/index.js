@@ -399,10 +399,14 @@ function run() {
                 const git = yield git_command_manager_1.GitCommandManager.create(sourceSettings.repositoryPath);
                 const rebaseHelper = new rebase_helper_1.RebaseHelper(git);
                 let rebasedCount = 0;
-                for (const pull of pulls) {
+                for (const pull of pulls) {                    
+                    try{
                     const result = yield rebaseHelper.rebase(pull);
                     if (result)
                         rebasedCount++;
+                    } catch (e) {
+                        core.info('rebasing failed ' + e.message)
+                    }
                 }
                 // Output count of successful rebases
                 core.setOutput('rebased-count', rebasedCount);

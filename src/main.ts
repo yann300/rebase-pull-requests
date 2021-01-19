@@ -50,8 +50,12 @@ async function run(): Promise<void> {
       const rebaseHelper = new RebaseHelper(git)
       let rebasedCount = 0
       for (const pull of pulls) {
-        const result = await rebaseHelper.rebase(pull)
-        if (result) rebasedCount++
+        try {
+          const result = await rebaseHelper.rebase(pull)
+          if (result) rebasedCount++
+        } catch (e) {
+          core.info('rebasing failed ' + e.message)
+        }
       }
 
       // Output count of successful rebases
