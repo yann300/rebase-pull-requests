@@ -2,6 +2,7 @@ import * as exec from '@actions/exec'
 import * as io from '@actions/io'
 import * as utils from './utils'
 import * as path from 'path'
+import * as core from '@actions/core'
 
 const tagsRefSpec = '+refs/tags/*:refs/tags/*'
 
@@ -279,10 +280,11 @@ export class GitCommandManager {
         }
       }
     }
-
+    core.info(`exec ${this.gitPath} , ${args} , ${options}`)
     result.exitCode = await exec.exec(`"${this.gitPath}"`, args, options)
     result.stdout = stdout.join('')
     result.stderr = stderr.join('')
+    core.info(`result exec ${result.exitCode} ${result.stdout} ${result.stderr}`)
     return result
   }
 }
