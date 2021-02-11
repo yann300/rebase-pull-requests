@@ -702,6 +702,9 @@ class RebaseHelper {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.git.exec(['rebase', `${remoteName}/${ref}`]);
+                core.info(result.stdout);
+                core.info(result.stderr);
+                core.info(result.exitCode.toString());
                 return result ? RebaseResult.Rebased : RebaseResult.AlreadyUpToDate;
             }
             catch (_a) {

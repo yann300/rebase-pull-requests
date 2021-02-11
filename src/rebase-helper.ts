@@ -100,6 +100,9 @@ export class RebaseHelper {
   ): Promise<RebaseResult> {
     try {
       const result = await this.git.exec(['rebase', `${remoteName}/${ref}`])
+      core.info(result.stdout)
+      core.info(result.stderr)
+      core.info(result.exitCode.toString())
       return result ? RebaseResult.Rebased : RebaseResult.AlreadyUpToDate
     } catch {
       return RebaseResult.Failed
