@@ -283,15 +283,10 @@ export class GitCommandManager {
       }
     }
     core.info(`exec ${this.gitPath} , ${args} , ${options}`)
-    try {
-      result.exitCode = await exec.exec(`"${this.gitPath}"`, args, options)
-      result.stdout = stdout.join('')
-      result.stderr = stderr.join('')
-      core.info(`result exec ${result.exitCode} ${result.stdout} ${result.stderr}`)
-    } catch (e) {
-      core.info(e.message)
-    }
-    
+
+    result.exitCode = await exec.exec(`"${this.gitPath}"`, args, options)
+    result.stdout = stdout.join('')
+    result.stderr = stderr.join('')
     return result
   }
 }

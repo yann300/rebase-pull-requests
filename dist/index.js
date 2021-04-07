@@ -285,15 +285,9 @@ class GitCommandManager {
                 }
             };
             core.info(`exec ${this.gitPath} , ${args} , ${options}`);
-            try {
-                result.exitCode = yield exec.exec(`"${this.gitPath}"`, args, options);
-                result.stdout = stdout.join('');
-                result.stderr = stderr.join('');
-                core.info(`result exec ${result.exitCode} ${result.stdout} ${result.stderr}`);
-            }
-            catch (e) {
-                core.info(e.message);
-            }
+            result.exitCode = yield exec.exec(`"${this.gitPath}"`, args, options);
+            result.stdout = stdout.join('');
+            result.stderr = stderr.join('');
             return result;
         });
     }
@@ -702,12 +696,15 @@ class RebaseHelper {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.git.exec(['rebase', `${remoteName}/${ref}`]);
+                core.info('------- rebasing result -------');
                 core.info(result.stdout);
                 core.info(result.stderr);
                 core.info(result.exitCode.toString());
+                core.info('-------------------------------');
                 return result ? RebaseResult.Rebased : RebaseResult.AlreadyUpToDate;
             }
             catch (_a) {
+                core.info(`Rebasing failed ${remoteName} ${ref}`);
                 return RebaseResult.Failed;
             }
         });
