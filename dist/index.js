@@ -680,6 +680,12 @@ class RebaseHelper {
                     body: `Rebase of head ref \`${pull.headRef}\` on base ref \`${pull.baseRef}\` failed. Conflicts must be resolved manually.`
                 });
                 core.info(`Created comment id '${comment.id}' on pull request '${pull.number}'.`);
+                try {
+                    yield this.git.exec(['rebase', '--abort']);
+                }
+                catch (e) {
+                    core.info(e.message);
+                }
             }
             return false;
         });

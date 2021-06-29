@@ -82,6 +82,11 @@ export class RebaseHelper {
       core.info(
         `Created comment id '${comment.id}' on pull request '${pull.number}'.`
       )
+      try {
+        await this.git.exec(['rebase', '--abort'])
+      } catch (e) {
+        core.info(e.message)
+      }   
     }
 
     return false
